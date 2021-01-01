@@ -25,7 +25,6 @@ class Led:
 
     @cold.setter
     def cold(self, value):
-        self.cold_pwm.duty(int(value))
         self._db[b"cold"] = bytes(str(value), 'utf-8')
         self._db.flush()
 
@@ -35,7 +34,6 @@ class Led:
 
     @warm.setter
     def warm(self, value):
-        self.warm_pwm.duty(int(value))
         self._db[b"warm"] = bytes(str(value), 'utf-8')
         self._db.flush()
 
@@ -57,8 +55,7 @@ class Led:
         if b'cold' not in self._db:
             self.db_init()
         else:
-            self.cold_pwm.duty(self.cold)
-            self.warm_pwm.duty(self.warm)
+            self.update_pwms()
 
     def db_init(self):
         self.cold = 0
@@ -68,19 +65,32 @@ class Led:
         try:
             jd = json_loads(data)
 
+            if 'power' in jd:
+                self.power = jd['power']
+
             if 'cold' in jd:
                 self.cold = jd['cold']
 
             if 'warm' in jd:
                 self.warm = jd['warm']
 
+            self.update_pwms()
             return self.get_vars()
         except Exception as e:
             return json_error(e)
 
     def get_vars(self):
         res = {
+            'power': self.power,
             'cold': self.cold,
             'warm': self.warm,
         }
         return json_result(res)
+
+    def update_pwms(self):
+        if(self.power):
+            self.cold_pwm.duty(self.cold)
+            self.warm_pwm.duty(self.warm)
+        else:
+            self.cold_pwm.duty(0)
+            self.warm_pwm.duty(0)
