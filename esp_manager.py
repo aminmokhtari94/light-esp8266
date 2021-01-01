@@ -78,7 +78,7 @@ class Esp():
     def ap_init(self):
         self._ap = network.WLAN(network.AP_IF)
         self._ap.active(True)
-        self._ap.config(essid='CoolAir')
+        self._ap.config(essid='CoolLight')
         return json_result({})
 
     def ap_change_password(self, data):
@@ -92,7 +92,7 @@ class Esp():
     def sta_init(self):
         self._sta = network.WLAN(network.STA_IF)
         self.sta_active()
-        self._sta.config(dhcp_hostname='CoolAir')
+        self._sta.config(dhcp_hostname='CoolLight')
         return json_result({})
 
     def sta_active(self):

@@ -2,7 +2,7 @@ import uasyncio
 import btree
 import network
 from json_helper import json_loads, json_error, json_result
-
+from machine import Pin, PWM
 
 # def main():
 # 	s=ScheduleTime(4,(11,5),(11,22),3)
@@ -25,6 +25,7 @@ class Led:
 
     @cold.setter
     def cold(self, value):
+        self.cold_pwm.duty(int(value))
         self._db[b"cold"] = bytes(str(value), 'utf-8')
         self._db.flush()
 
@@ -34,11 +35,18 @@ class Led:
 
     @warm.setter
     def warm(self, value):
+        self.warm_pwm.duty(int(value))
         self._db[b"warm"] = bytes(str(value), 'utf-8')
         self._db.flush()
 
     def __init__(self):
         self._power = True
+
+        self.cold_pwm = PWM(Pin(12))
+        self.cold_pwm.freq(100)
+
+        self.warm_pwm = PWM(Pin(14))
+        self.warm_pwm.freq(100)
 
         try:
             f = open("led", "r+b")
@@ -48,6 +56,9 @@ class Led:
         self._db = btree.open(f)
         if b'cold' not in self._db:
             self.db_init()
+        else:
+            self.cold_pwm.duty(self.cold)
+            self.warm_pwm.duty(self.warm)
 
     def db_init(self):
         self.cold = 0
@@ -61,7 +72,7 @@ class Led:
                 self.cold = jd['cold']
 
             if 'warm' in jd:
-                self.motor_speed = jd['warm']
+                self.warm = jd['warm']
 
             return self.get_vars()
         except Exception as e:

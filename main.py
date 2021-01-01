@@ -24,20 +24,11 @@ def serve_response(method, route, data):
             esp.sta_init()
             res = '{"result": true}'
 
-        elif route == b'/set_vars':
+        elif route == b'/vars':
             res = led.set_vars(data)
-
-        elif route == b'/get_vars':
-            res = led.get_vars()
 
         elif route == b'/ap_change_password':
             res = esp.ap_change_password(data)
-
-        elif route == b'/sta_scan':
-            res = esp.sta_scan()
-
-        elif route == b'/sta_isconnected':
-            res = esp.sta_isconnected()
 
         elif route == b'/sta_connect':
             res = esp.sta_connect(data)
@@ -47,6 +38,22 @@ def serve_response(method, route, data):
 
         elif route == b'/sta_deactive':
             res = esp.sta_deactive()
+
+        else:
+            return HTTP_Not_Found
+
+        return http_response(res)
+
+    elif method == b'GET':
+
+        if route == b'/vars':
+            res = led.get_vars()
+
+        elif route == b'/sta_scan':
+            res = esp.sta_scan()
+
+        elif route == b'/sta_isconnected':
+            res = esp.sta_isconnected()
 
         else:
             return HTTP_Not_Found
