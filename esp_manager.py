@@ -7,6 +7,15 @@ from json_helper import *
 class Esp():
 
     @property
+    def esp_name(self):
+        return self._db[b"esp_name"]
+
+    @esp_name.setter
+    def esp_name(self, value):
+        self._db[b"esp_name"] = value
+        self._db.flush()
+
+    @property
     def ap_password(self):
         return self._db[b"ap_password"]
 
@@ -66,6 +75,7 @@ class Esp():
         await uasyncio.sleep(s)
 
     def db_init(self):
+        self.esp_name = b"CoolLight"
         self.ap_password = b"12345678"
         self.sta_enable = b"false"
         self.sta_ssid = b""
@@ -78,8 +88,19 @@ class Esp():
     def ap_init(self):
         self._ap = network.WLAN(network.AP_IF)
         self._ap.active(True)
-        self._ap.config(essid='CoolLight')
+        self._ap.config(essid=self.esp_name)
         return json_result({})
+
+    def set_name(self, data):
+        try:
+            jd = json_loads(data)
+            name = jd['name']
+            self.esp_name = bytes(name, 'utf-8')
+        except Exception as e:
+            return json_error(e)
+
+    def get_name(self):
+        return json_result({'name': self.esp_name})
 
     def ap_change_password(self, data):
         try:
@@ -92,7 +113,7 @@ class Esp():
     def sta_init(self):
         self._sta = network.WLAN(network.STA_IF)
         self.sta_active()
-        self._sta.config(dhcp_hostname='CoolLight')
+        self._sta.config(dhcp_hostname=self.esp_name)
         return json_result({})
 
     def sta_active(self):

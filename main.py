@@ -27,6 +27,9 @@ def serve_response(method, route, data):
         elif route == b'/vars':
             res = led.set_vars(data)
 
+        elif route == b'/name':
+            res = esp.set_name(data)
+
         elif route == b'/ap_change_password':
             res = esp.ap_change_password(data)
 
@@ -48,6 +51,9 @@ def serve_response(method, route, data):
 
         if route == b'/vars':
             res = led.get_vars()
+
+        elif route == b'/name':
+            res = esp.get_name()
 
         elif route == b'/sta_scan':
             res = esp.sta_scan()
@@ -118,16 +124,14 @@ async def start(micropython_optimize=False):
             # may take this shortcut to save resources.
             client_stream = client_sock
 
-        # print("Request:")
         h = client_stream.readline()
         method, route, ver = check_request(h)
-        # print(h)
+
         while True:
             h = client_stream.readline()
             parse_header(h)
             if h == b"" or h == b"\r\n":
                 break
-            # print(h)
 
         print("Parsed:", method, route, ver, Authed)
 
